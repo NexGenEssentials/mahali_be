@@ -60,3 +60,9 @@ Step 7: Run the Development Server
 $ python manage.py runserver
 
 The application should now be accessible at http://127.0.0.1:8000/.
+
+Create database on mac
+$ psql -U postgres                                              # to open the postgresql prompt
+$ CREATE DATABASE mahali;                                       # to create the database
+$ \l                                                            # to list all databases
+$ \q                                                            # to quit the postgresql prompt
