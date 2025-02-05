@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'wishlists',
     'reviews',
     'payments',
+    'django_filters',
+    'car_rental'
 ]
 
 REST_FRAMEWORK = {
