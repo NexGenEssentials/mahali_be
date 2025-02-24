@@ -26,15 +26,15 @@ class ChangePasswordSerializer(serializers.Serializer):
         old_password = data.get("old_password")
         new_password = data.get("new_password")
 
-        # Checking if old password is correct
+       
         if not user.check_password(old_password):
             raise serializers.ValidationError({"old_password": "Old password is incorrect."})
 
-        # checkingu= if  new password is not the same as the old one
+       
         if old_password == new_password:
             raise serializers.ValidationError({"new_password": "New password must be different from the old one."})
 
-        # checking if  new password meets length requirement
+      
         if len(new_password) < 8:
             raise serializers.ValidationError({"new_password": "New password must be at least 8 characters long."})
 

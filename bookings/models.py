@@ -17,7 +17,8 @@ class Booking(models.Model):
         ('car_rental', 'Car Rental'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
+    # user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
+    user = models.ForeignKey( 'users.CustomUser', on_delete=models.CASCADE, related_name='bookings_general')
     service_name = models.CharField(max_length=255)
     service_type = models.CharField(max_length=50, choices=SERVICE_TYPES)
     date = models.DateField()

@@ -100,11 +100,11 @@ class ChangePasswordView(generics.UpdateAPIView):
         if serializer.is_valid():
             new_password = serializer.validated_data["new_password"]
 
-            # Set the new password
+           
             user.set_password(new_password)
             user.save()
 
-            # Keep user logged in
+           
             update_session_auth_hash(request, user)
 
             return Response({
@@ -136,7 +136,7 @@ class UpdateUserView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         user = self.get_object()
-        if isinstance(user, Response):  # Return if user not found
+        if isinstance(user, Response):  
             return user
         
         serializer = self.get_serializer(user, data=request.data, partial=True)
@@ -169,7 +169,7 @@ class UserActivateDeactivateView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         user = self.get_object()
-        if isinstance(user, Response):  # Return if user not found
+        if isinstance(user, Response):  
             return user
         
         action = request.data.get("action")
