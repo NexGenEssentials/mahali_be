@@ -3,7 +3,7 @@ from rest_framework import generics, status,filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
-from .models import Booking, Car, Feature,CarImage
+from .models import  Car, Feature,CarImage
 from .serializers import CarImageSerializer, CarSerializer, FeatureSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.parsers import MultiPartParser, FormParser

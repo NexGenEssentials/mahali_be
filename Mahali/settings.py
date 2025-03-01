@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'reviews',
     'payments',
     'django_filters',
-    'car_rental'
+    'car_rental',
+     'tours',
 ]
 
 REST_FRAMEWORK = {
@@ -149,3 +150,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  
+EMAIL_PORT = 587  # SMTP port for Gmail
+EMAIL_USE_TLS = True  # Enable TLS for secure communication
+EMAIL_HOST_USER = 'mahaliafricaadvt@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = '12345!@#$%'  # Your email password
+DEFAULT_FROM_EMAIL = 'mahaliafricaadvt@gmail.com'  # The email address used to send emails

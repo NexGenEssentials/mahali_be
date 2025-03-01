@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.models import CustomUser, UserRoles
-from .models import Booking, Car, CarImage, Feature
+from .models import  Car, CarImage, Feature
 
 
 class CarImageSerializer(serializers.ModelSerializer):
@@ -74,7 +74,4 @@ class CarSerializer(serializers.ModelSerializer):
         return instance
 
 
-class BookingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = '__all__'
+

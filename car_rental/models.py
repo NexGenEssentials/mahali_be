@@ -54,19 +54,4 @@ class CarImage(models.Model):
     def __str__(self):
         return f"Image for {self.car.name}"
 
-class Booking(models.Model):
-    car = models.ForeignKey(Car, related_name='bookings', on_delete=models.CASCADE)
-    user = models.ForeignKey(
-        'users.CustomUser',
-        on_delete=models.CASCADE,
-        related_name='bookings_general'  
-    )
-  
-    user = models.ForeignKey( 'users.CustomUser', on_delete=models.CASCADE, related_name='bookings_car_rental')
-    start_date = models.DateField()
-    end_date = models.DateField()
-    status = models.CharField(max_length=50, choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Cancelled', 'Cancelled')])
-
-    def __str__(self):
-        return f"Booking {self.id} for {self.car.name}"
 
