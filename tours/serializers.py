@@ -33,7 +33,7 @@ class TourPlanSerializer(serializers.ModelSerializer):
         fields = ["title", "description", "inclusion", "accommodation","inclusion","accommodation"]
 
 class TourPackageSerializer(serializers.ModelSerializer):
-    country = CountrySerializer(read_only=True)
+    # country = CountrySerializer(read_only=True)
     country_id = serializers.PrimaryKeyRelatedField(queryset=Country.objects.all(), source='country', write_only=True)
     tour_plans = TourPlanSerializer(many=True)
 
@@ -69,3 +69,8 @@ class TourPackageSerializer(serializers.ModelSerializer):
                 for tour_plan_data in tour_plans_data:
                     TourPlan.objects.create(tour_package=instance, day_number=tour_plan_data.get("day_number"), **tour_plan_data)
         return instance
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        tour_plans = data.pop("tour_plans", [])
+        data["tour_plans"] = tour_plans
+        return data

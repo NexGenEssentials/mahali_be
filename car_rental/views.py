@@ -163,7 +163,7 @@ class AddFeatureToCarView(APIView):
         car.features.add(*features)
         return Response({"message": "Features added successfully"}, status=status.HTTP_200_OK)
     
-class FeatureCreateView(generics.CreateAPIView):
+class FeatureCreateListView(generics.ListCreateAPIView):
     queryset = Feature.objects.all()
     serializer_class = FeatureSerializer
 

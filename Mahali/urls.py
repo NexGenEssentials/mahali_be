@@ -19,6 +19,8 @@ from django.urls import path, include,re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.conf import settings
+from django.conf.urls.static import static
 schema_view = get_schema_view(
     openapi.Info(
         title="Mahali Backend API Documentation",
@@ -43,3 +45,5 @@ urlpatterns = [
     path("api/", include("car_rental.urls")),
     path("api/", include("tours.urls")),
 ]
+if settings.DEBUG:  # Serve media files in development mode
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -98,7 +98,7 @@ class CancelBookingView(generics.UpdateAPIView):
 def send_booking_confirmation_email(user,booking):
     message = Mail(
         from_email='mahaliafricaadvt@gmail.com',
-        to_emails='danrwiyamirira@gmail.com',
+        to_emails='ngabojck@gmail.com',
         subject='Mahali Africa Booking Confirmation',
         html_content = render_to_string('booking_confirmation_email.html', {'user': user, 'booking': booking}))
     try:

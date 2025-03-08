@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from users.models import CustomUser, UserRoles
 from .models import  Car, CarImage, Feature
-
+from django.conf import settings
 
 class CarImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,16 +39,19 @@ class CarSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_first_image(self, obj):
-        """Return only the first image URL."""
+        """Return full URL of the first image."""
         first_image = obj.images.first()
-        return first_image.image.url if first_image else None
+        if first_image:
+            return f"{settings.BASE_URL}{first_image.image.url}"
+        return None
 
     def get_images(self, obj):
+        """Return full URLs of all images when retrieving a single car."""
         request = self.context.get("request")
         view = request.parser_context.get('view') if request else None
 
         if view and hasattr(view, "action") and view.action == "retrieve":
-            return [image.image.url for image in obj.images.all()]
+            return [f"{settings.BASE_URL}{image.image.url}" for image in obj.images.all()]
         return [] 
 
     def get_related_cars(self, obj):

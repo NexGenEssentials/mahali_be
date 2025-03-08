@@ -4,6 +4,11 @@ from .models import Country, TourPackage, TourPlan
 from .serializers import CountrySerializer, TourPackageSerializer, TourPlanSerializer
 from django.db import transaction
 from rest_framework.views import APIView
+from collections import defaultdict
+
+
+
+
 def api_response(success, message, data=None, status_code=status.HTTP_200_OK):
     return Response({
         "success": success,
@@ -12,14 +17,19 @@ def api_response(success, message, data=None, status_code=status.HTTP_200_OK):
     }, status=status_code)
 
 class TourPackageListCreateView(generics.ListCreateAPIView):
-    queryset = TourPackage.objects.filter(is_active=True)
+    queryset = TourPackage.objects.filter(is_active=True).select_related("country")
     serializer_class = TourPackageSerializer
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return api_response(True, "Tour packages retrieved successfully.", serializer.data)
+        grouped_data = defaultdict(list)
 
+        # Grouping tour packages by country
+        for tour in queryset:
+            country_name = tour.country.name if tour.country else "Unknown"
+            grouped_data[country_name].append(TourPackageSerializer(tour).data)
+
+        return api_response(True, "Tour packages retrieved successfully.", dict(grouped_data))
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
