@@ -152,7 +152,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # This is the directory where medi
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-BASE_URL = "http://localhost:7000"
+BASE_URL = "http://107.23.87.13:8090"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
