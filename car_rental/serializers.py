@@ -11,9 +11,16 @@ class CarImageSerializer(serializers.ModelSerializer):
 
 class RelatedCarSerializer(serializers.ModelSerializer):
     """A smaller serializer to prevent infinite recursion."""
+    first_image = serializers.SerializerMethodField()
     class Meta:
         model = Car
-        fields = ['id', 'name', 'category', 'transmission']
+        fields = ['id', 'name', 'category', 'transmission', 'price_per_day', 'year', 'first_image']
+    def get_first_image(self, obj):
+        """Return full URL of the first image for related cars."""
+        first_image = obj.images.first()
+        if first_image:
+            return f"{settings.BASE_URL}{first_image.image.url}"
+        return None
 
 
 class FeatureSerializer(serializers.ModelSerializer):
@@ -46,13 +53,15 @@ class CarSerializer(serializers.ModelSerializer):
         return None
 
     def get_images(self, obj):
-        """Return full URLs of all images when retrieving a single car."""
+        """Return full URLs of all images only for a single car detail view."""
         request = self.context.get("request")
-        view = request.parser_context.get('view') if request else None
-
-        if view and hasattr(view, "action") and view.action == "retrieve":
-            return [f"{settings.BASE_URL}{image.image.url}" for image in obj.images.all()]
-        return [] 
+        
+        # Check if this is a detail view (contains car ID in URL)
+        if request and request.parser_context:
+            if "pk" in request.parser_context["kwargs"]:  
+                return [f"{settings.BASE_URL}{image.image.url}" for image in obj.images.all()]
+    
+        return []  # Return empty list for list view
 
     def get_related_cars(self, obj):
         related_cars = obj.get_related_cars()

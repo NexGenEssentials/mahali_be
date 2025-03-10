@@ -3,6 +3,8 @@ from rest_framework import generics, status,filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
+
+from bookings.models import Booking
 from .models import  Car, Feature,CarImage
 from .serializers import CarImageSerializer, CarSerializer, FeatureSerializer
 from django_filters.rest_framework import DjangoFilterBackend
@@ -123,7 +125,7 @@ class CheckAvailabilityView(APIView):
         car_id = request.query_params.get('car_id')
         start_date_str = request.query_params.get('start_date')
         end_date_str = request.query_params.get('end_date')
-
+        print(car_id, start_date_str, end_date_str)
         if not all([car_id, start_date_str, end_date_str]):
             return Response({"error": "Missing parameters"}, status=400)
 
@@ -134,7 +136,7 @@ class CheckAvailabilityView(APIView):
         except ValueError:
             return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
-        conflicting_bookings = Booking.objects.filter( car_id=car_id, status='Confirmed' ).filter( Q(start_date__lte=end_date) & Q(end_date__gte=start_date) )
+        conflicting_bookings = Booking.objects.filter( object_id=car_id, status='Confirmed' ).filter( Q(start_date__lte=end_date) & Q(end_date__gte=start_date) )
 
         if conflicting_bookings.exists():
             return Response({"available": False, "message": "Car is already booked for selected dates"})

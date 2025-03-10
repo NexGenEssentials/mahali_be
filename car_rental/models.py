@@ -25,6 +25,7 @@ class Car(models.Model):
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
     is_available = models.BooleanField(default=True)
     features = models.ManyToManyField(Feature, related_name="cars", blank=True)
+    description = models.CharField(max_length=255 ,default='No description available')
     owner = models.ForeignKey(
         CustomUser,
         null=True,  
@@ -40,6 +41,7 @@ class Car(models.Model):
             fuel_type=self.fuel_type,
             transmission=self.transmission,
             category=self.category
+    
         ).exclude(id=self.id)[:5] 
 
     def __str__(self):
