@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
@@ -39,3 +39,21 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"new_password": "New password must be at least 8 characters long."})
 
         return data
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Adding extra fields from your CustomUser model
+        token['full_name'] = user.full_name
+        token['role'] = user.role
+        token['phone'] = str(user.phone)
+        token['email'] = user.email
+        token['is_verified'] = user.is_verified
+
+        return token
+
+    

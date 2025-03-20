@@ -3,15 +3,20 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import get_user_model, update_session_auth_hash
-from .serializers import RegisterSerializer, UserSerializer, ChangePasswordSerializer
+from .serializers import CustomTokenObtainPairSerializer, RegisterSerializer, UserSerializer, ChangePasswordSerializer
 from .permissions import IsAdmin, IsServiceProvider
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 User = get_user_model()
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
