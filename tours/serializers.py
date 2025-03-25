@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Country, Highlight, TourPackage, TourPlan, InclusionExclusion, Accommodation, TourImage, WhenToGo
+from .models import Activity, Category, Country, CustomPackage, CustomPackageActivity, Highlight, TourPackage, TourPlan, InclusionExclusion, Accommodation, TourImage, WhenToGo
 from django.db import transaction
 from django.conf import settings
 from users.models import CustomUser, UserRoles
@@ -140,4 +140,70 @@ class TourPackageSerializer(serializers.ModelSerializer):
         data["tour_plans"] = tour_plans
         return data
 
+
+
+class ActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Activity
+        fields = '__all__'
+
+class CategorySerializer(serializers.ModelSerializer):
+    activities = ActivitySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'description', 'activities']  
+# class ActivitySerializer(serializers.ModelSerializer):
+#     category = CategorySerializer(read_only=True)
+
+#     class Meta:
+#         model = Activity
+#         fields = ['id', 'name', 'description', 'price_per_day', 'category']
+
+
+
+
+
+
+class CustomPackageActivitySerializer(serializers.ModelSerializer):
+    activity = ActivitySerializer(read_only=True)
+    activity_id = serializers.PrimaryKeyRelatedField(
+        queryset=Activity.objects.all(),
+        source='activity',
+        write_only=True
+    )
+
+    class Meta:
+        model = CustomPackageActivity
+        fields = ['id', 'activity', 'activity_id', 'number_of_days', 'sub_total_price']
+        read_only_fields = ['sub_total_price']
+
+class CustomPackageSerializer(serializers.ModelSerializer):
+    package_activities = CustomPackageActivitySerializer(many=True, required=False)
+
+    class Meta:
+        model = CustomPackage
+        fields = ['id', 'name', 'total_price', 'package_activities']  
+
+    def create(self, validated_data):
+        activities_data = validated_data.pop('package_activities', [])
+        user = self.context['request'].user
+        package = CustomPackage.objects.create(user=user, **validated_data)
+
+        total_price = 0
+        for activity_data in activities_data:
+            activity = activity_data['activity']
+            number_of_days = activity_data['number_of_days']
+            sub_total = activity.price_per_day * number_of_days
+            CustomPackageActivity.objects.create(
+                custom_package=package,
+                activity=activity,
+                number_of_days=number_of_days,
+                sub_total_price=sub_total
+            )
+            total_price += sub_total
+
+        package.total_price = total_price
+        package.save()
+        return package
 

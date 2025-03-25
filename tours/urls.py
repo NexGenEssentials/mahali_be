@@ -20,7 +20,17 @@
 # ]
 
 from django.urls import path
-from .views import AssignHighlightToCountryView, CountryListCreateView, CreateHighlightView, TourImageListCreateView, TourPackageByCountryView, TourPackageListCreateView, TourPackageDetailView, TourPlanListCreateView, TourPlanDetailView, UpdateCountryImageView, WhenToGoDetailView, WhenToGoListCreateView
+from .views import ActivityCreateView, AssignHighlightToCountryView, CategoryCreateView, CountryListCreateView, CreateHighlightView, TourImageListCreateView, TourPackageByCountryView, TourPackageListCreateView, TourPackageDetailView, TourPlanListCreateView, TourPlanDetailView, UpdateCountryImageView, WhenToGoDetailView, WhenToGoListCreateView
+from .views import (
+    CategoryListView,
+    ActivityListView,
+    CustomPackageCreateView,
+    CustomPackageListView,
+    CustomPackageDetailView,
+    CustomPackageDeleteView,
+    AddActivityToPackageView,
+    RemoveActivityFromPackageView
+)
 
 urlpatterns = [
     # Countries
@@ -48,4 +58,22 @@ urlpatterns = [
     # when to go
     path('when-to-go/', WhenToGoListCreateView.as_view(), name='when-to-go-list-create'),
     path('when-to-go/<int:pk>/', WhenToGoDetailView.as_view(), name='when-to-go-detail'),
+
+    # custom packages
+
+    path('categories/create/', CategoryCreateView.as_view(), name='category-create'),
+
+    path('categories/', CategoryListView.as_view(), name='category-list'),
+    path('activities/', ActivityListView.as_view(), name='activity-list'),
+    path('activities/create/', ActivityCreateView.as_view(), name='activity-create'),
+
+    #  Custom Packages CRUD
+    path('packages/', CustomPackageCreateView.as_view(), name='package-create'),
+    path('packages/list/', CustomPackageListView.as_view(), name='package-list'),
+    path('packages/<int:pk>/', CustomPackageDetailView.as_view(), name='package-detail'),
+    path('packages/<int:pk>/delete/', CustomPackageDeleteView.as_view(), name='package-delete'),
+
+    #  Manage activities inside a package
+    path('packages/<int:pk>/add-activity/', AddActivityToPackageView.as_view(), name='package-add-activity'),
+    path('packages/<int:package_pk>/remove-activity/<int:activity_pk>/', RemoveActivityFromPackageView.as_view(), name='package-remove-activity'),
 ]

@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
-from .models import Country, Highlight, TourImage, TourPackage, TourPlan, WhenToGo
-from .serializers import CountrySerializer, HighlightSerializer, TourImageSerializer, TourPackageSerializer, TourPlanSerializer, WhenToGoSerializer
+from .models import Activity, Category, Country, CustomPackage, CustomPackageActivity, Highlight, TourImage, TourPackage, TourPlan, WhenToGo
+from .serializers import ActivitySerializer, CategorySerializer, CountrySerializer, CustomPackageActivitySerializer, CustomPackageSerializer, HighlightSerializer, TourImageSerializer, TourPackageSerializer, TourPlanSerializer, WhenToGoSerializer
 from django.db import transaction
 from rest_framework.views import APIView
 from collections import defaultdict
@@ -303,3 +303,131 @@ class WhenToGoDetailView(generics.GenericAPIView):
             success=True,
             message="Season deleted successfully"
         )
+
+
+
+## Custom package logics 
+class CategoryCreateView(APIView):
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            category = serializer.save()
+            return api_response(True, "Category created successfully", CategorySerializer(category).data, status.HTTP_201_CREATED)
+        return api_response(False, "Validation failed", serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+# class ActivityCreateView(APIView):
+#     def post(self, request):
+#         serializer = ActivitySerializer(data=request.data)
+#         if serializer.is_valid():
+#             activity = serializer.save()
+#             return api_response(True, "Activity created successfully", ActivitySerializer(activity).data, status.HTTP_201_CREATED)
+#         return api_response(False, "Validation failed", serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+
+
+class ActivityCreateView(APIView):
+    def post(self, request):
+        serializer = ActivitySerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save() 
+            return Response({
+                "success": True,
+                "message": "Activity created successfully",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response({
+            "success": False,
+            "message": "Validation failed",
+            "data": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomPackageCreateView(APIView):
+    def post(self, request):
+        serializer = CustomPackageSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            package = serializer.save()
+            return api_response(True, "Custom package created successfully", CustomPackageSerializer(package).data, status.HTTP_201_CREATED)
+        return api_response(False, "Validation failed", serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+class CategoryListView(APIView):
+    def get(self, request):
+        categories = Category.objects.prefetch_related('activities').all()
+        serializer = CategorySerializer(categories, many=True)
+        return api_response(True, "Categories fetched successfully", serializer.data)
+
+class ActivityListView(APIView):
+    def get(self, request):
+        activities = Activity.objects.select_related('category').all()
+        serializer = ActivitySerializer(activities, many=True)
+        return api_response(True, "Activities fetched successfully", serializer.data)
+
+class CustomPackageListView(APIView):
+    def get(self, request):
+        packages = CustomPackage.objects.filter(user=request.user).prefetch_related('package_activities__activity')
+        serializer = CustomPackageSerializer(packages, many=True)
+        return api_response(True, "Custom packages fetched successfully", serializer.data)
+
+class CustomPackageDetailView(APIView):
+    def get(self, request, pk):
+        try:
+            package = CustomPackage.objects.prefetch_related('package_activities__activity').get(pk=pk, user=request.user)
+        except CustomPackage.DoesNotExist:
+            return api_response(False, "Package not found", status_code=status.HTTP_404_NOT_FOUND)
+
+        serializer = CustomPackageSerializer(package)
+        return api_response(True, "Package retrieved successfully", serializer.data)
+
+class AddActivityToPackageView(APIView):
+    def post(self, request, pk):
+        try:
+            package = CustomPackage.objects.get(pk=pk, user=request.user)
+        except CustomPackage.DoesNotExist:
+            return api_response(False, "Package not found", status_code=status.HTTP_404_NOT_FOUND)
+
+        serializer = CustomPackageActivitySerializer(data=request.data)
+        if serializer.is_valid():
+            activity = serializer.validated_data['activity']
+            number_of_days = serializer.validated_data['number_of_days']
+            sub_total = activity.price_per_day * number_of_days
+            package_activity = CustomPackageActivity.objects.create(
+                custom_package=package,
+                activity=activity,
+                number_of_days=number_of_days,
+                sub_total_price=sub_total
+            )
+            # Update total package price
+            package.total_price += sub_total
+            package.save()
+            return api_response(True, "Activity added to package successfully", CustomPackageActivitySerializer(package_activity).data)
+        return api_response(False, "Validation failed", serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+class RemoveActivityFromPackageView(APIView):
+    def delete(self, request, package_pk, activity_pk):
+        try:
+            package_activity = CustomPackageActivity.objects.get(
+                custom_package__id=package_pk, 
+                custom_package__user=request.user, 
+                id=activity_pk
+            )
+        except CustomPackageActivity.DoesNotExist:
+            return api_response(False, "Activity not found in package", status_code=status.HTTP_404_NOT_FOUND)
+
+        # Update total package price
+        package = package_activity.custom_package
+        package.total_price -= package_activity.sub_total_price
+        package_activity.delete()
+        package.save()
+
+        return api_response(True, "Activity removed from package successfully")
+
+class CustomPackageDeleteView(APIView):
+    def delete(self, request, pk):
+        try:
+            package = CustomPackage.objects.get(pk=pk, user=request.user)
+        except CustomPackage.DoesNotExist:
+            return api_response(False, "Package not found", status_code=status.HTTP_404_NOT_FOUND)
+
+        package.delete()
+        return api_response(True, "Package deleted successfully", status_code=status.HTTP_204_NO_CONTENT)

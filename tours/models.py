@@ -2,7 +2,7 @@ from django.db import models
 
 from users.models import CustomUser, UserRoles
 
-
+from django.conf import settings
 
 class Country(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -119,6 +119,51 @@ class TourImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.tour_package.title}"
+
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class Activity(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    location = models.TextField(blank=True, null=True,default="kigali")
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='activities')
+
+    def __str__(self):
+        return f"{self.name} (${self.price_per_day}/day)"
+
+
+class CustomPackage(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='custom_packages')
+    name = models.CharField(max_length=255)
+    total_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - ${self.total_price}"
+class CustomPackageActivity(models.Model):
+    custom_package = models.ForeignKey(CustomPackage, on_delete=models.CASCADE, related_name='package_activities')
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    number_of_days = models.PositiveIntegerField()
+    sub_total_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    def save(self, *args, **kwargs):
+        # Auto calculate subtotal
+        self.sub_total_price = self.activity.price_per_day * self.number_of_days
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.activity.name} - {self.number_of_days} day(s)"
+    
+
+
+
+
 
 
 # tour_plan = TourPlanSerializer(many=True)
