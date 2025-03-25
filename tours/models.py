@@ -44,6 +44,7 @@ class TourPackage(models.Model):
     best_time_to_visit = models.CharField(max_length=50)
     duration_days = models.PositiveIntegerField()
     duration_nights = models.PositiveIntegerField()
+    price = models.CharField(max_length=1000,default=2000)
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=20)
     rating = models.FloatField(default=0.0)
